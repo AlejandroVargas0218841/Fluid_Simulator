@@ -1,0 +1,13 @@
+Problem 1
+	Undertand what the teacher wants us to do, I had to ask him directly. 
+
+Problem 2
+	Solids were pretty tricky 
+
+Problem 3
+	the part for the velocity crashes, had to create editor.py 
+
+Problem 4
+	the anim.save() line on fluid.py does not seem to work, I don't know if my machine cant read it because of the path, I had to record my screen and edit the videos myself. 
+
+
