@@ -4,8 +4,6 @@ and the mike ash vulgarization https://mikeash.com/pyblog/fluid-simulation-for-d
 
 https://github.com/Guilouf/python_realtime_fluidsim
 """
-from filecmp import cmp
-from matplotlib import cm
 import numpy as np
 import math
 
@@ -80,12 +78,12 @@ class Fluid:
 
             for sol in self.solid:
                 # vertical, invert if y vector
-                table[sol.pos_y:sol.pos_y + sol.size_y, sol.pos_x, 1] = - table[sol.pos_y:sol.pos_y + sol.size_y, sol.pos_x, 1]
-                table[sol.pos_y:sol.pos_y + sol.size_y, sol.pos_x + sol.size_x, 1] = - table[sol.pos_y:sol.pos_y + sol.size_y, sol.pos_x + sol.size_x, 1]
+                table[sol.positiony:sol.positiony + sol.sizeY, sol.positionx, 1] = - table[sol.positiony:sol.positiony + sol.sizeY, sol.positionx, 1]
+                table[sol.positiony:sol.positiony + sol.sizeY, sol.positionx + sol.sizeX, 1] = - table[sol.positiony:sol.positiony + sol.sizeY, sol.positionx + sol.sizeX, 1]
 
                 # horizontal, invert if x vector
-                table[sol.pos_y, sol.pos_x:sol.pos_x + sol.size_x, 0] = - table[sol.pos_y, sol.pos_x:sol.pos_x + sol.size_x, 0]
-                table[sol.pos_y + sol.size_y, sol.pos_x:sol.pos_x + sol.size_x, 0] = - table[sol.pos_y + sol.size_y, sol.pos_x:sol.pos_x + sol.size_x, 0]
+                table[sol.positiony, sol.positionx:sol.positionx + sol.sizeX, 0] = - table[sol.positiony, sol.positionx:sol.positionx + sol.sizeX, 0]
+                table[sol.positiony + sol.sizeY, sol.positionx:sol.positionx + sol.sizeX, 0] = - table[sol.positiony + sol.sizeY, sol.positionx:sol.positionx + sol.sizeX, 0]
 
 
         table[0, 0] = 0.5 * (table[1, 0] + table[0, 1])
@@ -183,7 +181,7 @@ if __name__ == "__main__":
         from matplotlib import animation
 
         inst = Fluid()
-        cmap, density, velocity = create_from_input(inst, "Data1")
+        color, density, velocity = fill_fluid(inst, "Data1")
         
         def update_im(i, densities, velocities):
             maintain_step(inst, densities, velocities)
@@ -196,7 +194,7 @@ if __name__ == "__main__":
         fig = plt.figure()
 
         # plot density
-        im = plt.imshow(inst.density, vmax=100, interpolation='bilinear', cmap=cmap)
+        im = plt.imshow(inst.density, vmax=100, interpolation='bilinear', cmap=color)
 
         # plot vector field
         q = plt.quiver(inst.velo[:, :, 1], inst.velo[:, :, 0], scale=10, angles='xy')
