@@ -127,9 +127,9 @@ def read_input(filename=""):
 
 def fill_fluid(fluid, filename=""):
     dens, vels, sols = read_input(filename)
-    colors = ["inferno", "magma", "plasma"]
+    colors = ["inferno", "YlOrBr", "plasma"]
     print("1. Black to Yellow")
-    print("2. Black to pink")
+    print("2. Yellow to Brown")
     print("3. Blue to Yellow")
     while True:
         color = int(input("Choose a color (default 1): ") or 1)
