@@ -2,12 +2,12 @@ Problem 1
 	Undertand what the teacher wants us to do, I had to ask him directly. 
 
 Problem 2
-	Solids were pretty tricky 
+	Solids were pretty tricky, they work but as the animation goes by, the fluid passes a little bit through the solids, this is still unsolved, but i like to think 	that the fluid goes a bit over the solid because of the velocity.  
 
 Problem 3
-	the part for the velocity crashes, had to create editor.py 
+	The part for the velocity crashes, had to create editor.py 
 
 Problem 4
-	the anim.save() line on fluid.py does not seem to work, I don't know if my machine cant read it because of the path, I had to record my screen and edit the videos myself. 
+	the anim.save() line on fluid.py does not seem to work, I don't know if my machine cant read it because of the path, I had to record my screen and edit the 		videos myself, so when you see themyou have to skip forward a few seconds to see the start of the animation. 
 
 
