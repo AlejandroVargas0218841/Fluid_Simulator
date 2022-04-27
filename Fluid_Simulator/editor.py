@@ -28,7 +28,7 @@ class Vel:
         self.directionX = self.forceX * np.cos(self.current_rot)
         self.directionY = self.forceY * np.sin(self.current_rot)
 
-    def anim_return(self):
+    def anim_move(self):
         if abs(self.current_length) >= self.length: self.current_step *= -1
         self.current_length += self.current_step
 
@@ -40,7 +40,7 @@ class Vel:
 
     def step(self):
         if self.animation in ["ROTATE_RIGHT", "ROTATE_LEFT"]: self.anim_rotate()
-        elif self.animation in ["MOVE_X", "MOVE_Y"]: self.anim_return()
+        elif self.animation in ["MOVE_X", "MOVE_Y"]: self.anim_move()
         
 
 class Den:
