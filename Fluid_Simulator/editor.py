@@ -1,108 +1,76 @@
-import sys
-from unittest.util import sorted_list_difference
-from fluid import Fluid
-from enum import Enum
 import numpy as np
+class Vel:
+    def __init__(self, positionx, positiony, forceX, forceY, animation="STATIC", animation_value=0):
+        self.positionx = positionx
+        self.positiony = positiony
+        self.forceX = forceX
+        self.forceY = forceY
+        self.directionX = self.forceX
+        self.directionY = self.forceY
 
-class velAnim(Enum):
-    STATIC = 1
-    ROTATE_RIGHT = 2
-    ROTATE_LEFT = 3
-    MOVE_X = 4
-    MOVE_Y = 5
+        if animation not in ["ROTATE_RIGHT", "ROTATE_LEFT", "MOVE_X", "MOVE_Y"]: animation = "STATIC"
+        self.animation = animation
 
-    def __int__(self):
-        return self.value
+        self.rotation = 0
+        self.current_rot = 0
 
-class Velocity:
-    def __init__(self, pos_x: int, pos_y: int, strength_x: int, strength_y: int, animation=velAnim.STATIC, animation_value=0):
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.strength_x = strength_x
-        self.strength_y = strength_y
-        self.__dir_x = self.strength_x
-        self.__dir_y = self.strength_y
+        self.length = 0
+        self.current_length = 0
+        self.current_step = 1
 
-        if animation not in [velAnim.ROTATE_RIGHT, velAnim.ROTATE_LEFT, velAnim.MOVE_X, velAnim.MOVE_Y]: animation = velAnim.STATIC
-        self.__animation = animation
+        if self.animation in ["ROTATE_RIGHT", "ROTATE_LEFT"]: self.rotation = animation_value
+        elif self.animation in ["MOVE_X", "MOVE_Y"]: self.length = animation_value
 
-        self.__rotation = 0
-        self.__current_rot = 0
+    def anim_rotate(self):
+        if self.animation == "ROTATE_RIGHT": self.current_rot += np.deg2rad(self.rotation)
+        elif self.animation == "ROTATE_LEFT": self.current_rot -= np.deg2rad(self.rotation)
 
-        self.__length = 0
-        self.__current_length = 0
-        self.__step = 1
+        self.directionX = self.forceX * np.cos(self.current_rot)
+        self.directionY = self.forceY * np.sin(self.current_rot)
 
-        if self.__animation in [velAnim.ROTATE_RIGHT, velAnim.ROTATE_LEFT]: self.__rotation = animation_value
-        elif self.__animation in [velAnim.MOVE_X, velAnim.MOVE_Y]: self.__length = animation_value
+    def anim_return(self):
+        if abs(self.current_length) >= self.length: self.current_step *= -1
+        self.current_length += self.current_step
 
-    def __str__(self):
-        string = f"{self.pos_x}, {self.pos_y}, {self.strength_x}, {self.strength_y}, {int(self.__animation)}"
-        if self.__animation in [velAnim.ROTATE_RIGHT, velAnim.ROTATE_LEFT]: string += f", {self.__rotation}"
-        elif self.__animation in [velAnim.MOVE_X, velAnim.MOVE_Y]: string += f", {self.__length}"
-        return string
+        if self.animation == "MOVE_X": self.positionx += self.current_length
+        elif self.animation == "MOVE_Y": self.positiony += self.current_length
 
-    def __rotate(self):
-        if self.__animation == velAnim.ROTATE_RIGHT: self.__current_rot += np.deg2rad(self.__rotation)
-        elif self.__animation == velAnim.ROTATE_LEFT: self.__current_rot -= np.deg2rad(self.__rotation)
-
-        self.__dir_x = self.strength_x * np.cos(self.__current_rot)
-        self.__dir_y = self.strength_y * np.sin(self.__current_rot)
-
-    def __return(self):
-        if abs(self.__current_length) >= self.__length: self.__step *= -1
-        self.__current_length += self.__step
-
-        if self.__animation == velAnim.MOVE_X: self.pos_x += self.__current_length
-        elif self.__animation == velAnim.MOVE_Y: self.pos_y += self.__current_length
-
-    def get_dir(self):
-        return [self.__dir_y, self.__dir_x]
+    def get_direction(self):
+        return [self.directionY, self.directionX]
 
     def step(self):
-        if self.__animation in [velAnim.ROTATE_RIGHT, velAnim.ROTATE_LEFT]: self.__rotate()
-        elif self.__animation in [velAnim.MOVE_X, velAnim.MOVE_Y]: self.__return()
+        if self.animation in ["ROTATE_RIGHT", "ROTATE_LEFT"]: self.anim_rotate()
+        elif self.animation in ["MOVE_X", "MOVE_Y"]: self.anim_return()
         
 
-class Density:
-    
-    def __init__(self, pos_x: int, pos_y: int, size_x: int, size_y: int, density=100):
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.size_x = size_x
-        self.size_y = size_y
-        self.density = density
-
-    def __str__(self):
-        return f"{self.pos_x}, {self.pos_y}, {self.size_x}, {self.size_y}, {self.density}"       
+class Den:
+    def __init__(self, positionx, positiony, sizeX, sizeY, den=100):
+        self.positionx = positionx
+        self.positiony = positiony
+        self.sizeX = sizeX
+        self.sizeY = sizeY
+        self.den = den  
 
 
-class Solid:
-    def __init__(self, pos_x: int, pos_y: int, size_x: int, size_y: int):
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.size_x = size_x
-        self.size_y = size_y
-
-    def __str__(self):
-        return f"{self.pos_x}, {self.pos_y}, {self.size_x}, {self.size_y}"
+class Sol:
+    def __init__(self, positionx, positiony, sizeX, sizeY):
+        self.positionx = positionx
+        self.positiony = positiony
+        self.sizeX = sizeX
+        self.sizeY = sizeY
     
     
 def read_input(filename=""):
-    filename="Data1"
     file = open(filename + ".txt", "r")
     
     lines = file.read().split("\n")
     den_array = []
     vel_array = []
     sol_array = []
-    colormap = ""
     current = ""
     length = 0
     for line in lines:
-        if "color" in line:
-            colormap = line.split("=")[1]
-        elif "D" in line:
+        if "D" in line:
             length = int(line.split("=")[1])
             current = "D"
         elif "V" in line:
@@ -117,75 +85,72 @@ def read_input(filename=""):
             elif current == "V": vel_array.append(line)
             elif current == "S": sol_array.append(line)
     file.close()
-
-
-   
-    solids = []
+    
+    sols = []
     for sol in sol_array:
         info = sol.split(", ")
-        pos_x = int(info[0])
-        pos_y = int(info[1])
-        size_x = int(info[2])
-        size_y = int(info[3])
-        temp_sol = Solid(pos_x, pos_y, size_x, size_y)
-        solids.append(temp_sol)
+        positionx = int(info[0])
+        positiony = int(info[1])
+        sizeX = int(info[2])
+        sizeY = int(info[3])
+        temp_sol = Sol(positionx, positiony, sizeX, sizeY)
+        sols.append(temp_sol)
         
-
-    velocities = []
+    vels = []
     for vel in vel_array:
         info = vel.split(", ")
         animation_value = 0
 
-        pos_x = int(info[0])
-        pos_y = int(info[1])
-        strength_x = int(info[2])
-        strength_y = int(info[3])
-        animation = velAnim(int(info[4]))
-        if animation in [velAnim.ROTATE_RIGHT, velAnim.ROTATE_LEFT, velAnim.MOVE_X, velAnim.MOVE_Y]:
+        positionx = int(info[0])
+        positiony = int(info[1])
+        forceX = int(info[2])
+        forceY = int(info[3])
+        animation = info[4]
+        if animation in ["ROTATE_RIGHT", "ROTATE_LEFT", "MOVE_X", "MOVE_Y"]:
             animation_value = int(info[5])
 
-        temp_vel = Velocity(pos_x, pos_y, strength_x, strength_y, animation, animation_value)
-        velocities.append(temp_vel)
+        temp_vel = Vel(positionx, positiony, forceX, forceY, animation, animation_value)
+        vels.append(temp_vel)
     
-    
-    densities = []
+    dens = []
     for den in den_array:
         info = den.split(", ")
-        pos_x = int(info[0])
-        pos_y = int(info[1])
-        size_x = int(info[2])
-        size_y = int(info[3])
+        positionx = int(info[0])
+        positiony = int(info[1])
+        sizeX = int(info[2])
+        sizeY = int(info[3])
         density = int(info[4])
-        temp_den = Density(pos_x, pos_y, size_x, size_y, density)
-        densities.append(temp_den)
+        temp_den = Den(positionx, positiony, sizeX, sizeY, density)
+        dens.append(temp_den)
+        
+    return dens, vels, sols
 
+def fill_fluid(fluid, filename=""):
+    dens, vels, sols = read_input(filename)
+    colors = ["inferno", "magma", "plasma"]
+    print("1. Black to Yellow")
+    print("2. Black to pink")
+    print("3. Blue to Yellow")
+    while True:
+        color = int(input("Choose a color (default 1): ") or 1)
+        if color in [1, 2, 3]: break
+    color_map = colors[color - 1]
 
-    return colormap, densities, velocities, solids
+    fluid.solid = sols
+    maintain_step(fluid, dens, vels)
 
+    return color_map, dens, vels
 
-
-def create_from_input(fluid: Fluid, filename=""):
-    cmap, densities, velocities, solids = read_input(filename)
-    colormap = choose_color(cmap)
-
-    fluid.solid = solids
-    maintain_step(fluid, densities, velocities)
-
-    return colormap, densities, velocities
-
-def choose_color(color_name=""):
-    return color_name
-
-def add_velocity(fluid: Fluid, velocity: Velocity):
-    fluid.velo[velocity.pos_y, velocity.pos_x] = velocity.get_dir()
+def add_Vel(fluid, Vel):
+    fluid.velo[Vel.positiony, Vel.positionx] = Vel.get_direction()
     
-def add_density(fluid: Fluid, density: Density):
-    fluid.density[density.pos_y:density.pos_y + density.size_y, density.pos_x:density.pos_x + density.size_x] = density.density
+def add_Den(fluid, Den):
+    fluid.density[Den.positiony:Den.positiony + Den.sizeY, Den.positionx:Den.positionx + Den.sizeX] = Den.den
     
-def maintain_step(fluid: Fluid, densities: list, velocities: list):
+def maintain_step(fluid, densities, velocities):
     for den in densities:
-        add_density(fluid, den)
+        add_Den(fluid, den)
     
     for vel in velocities:
-        add_velocity(fluid, vel)
+        add_Vel(fluid, vel)
         vel.step()
